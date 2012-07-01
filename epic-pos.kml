@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.2">
+  <Document>
+    <name>Radio Units</name>
+    <open>1</open>
+    <Folder name="Base">
+      <name>Base</name>
+      <Placemark xmlns="">
+        <name>Handset 9011</name>
+        <LookAt>
+          <longitude>55.065342374146</longitude>
+          <latitude>24.8526944825426</latitude>
+          <altitude>3000</altitude>
+          <range>300</range>
+          <tilt>0</tilt>
+          <heading>0</heading>
+        </LookAt>
+        <Point>
+          <coordinates>55.065342374146,24.8526944825426,0</coordinates>
+        </Point>
+        <Style>
+          <BalloonStyle>
+            <text><![CDATA[<h2>Handset 9011</h2> <b>RadioID:</b> 9011<br/> <b>Speed:</b> 0.0 km/h;<br/> <b>Updated on:</b> 2012-06-05 14:27:22<br/><br/> ]]></text>
+          </BalloonStyle>
+        </Style>
+      </Placemark>
+      <Placemark xmlns="">
+        <name>Handset 9012</name>
+        <LookAt>
+          <longitude>55.0713583175093</longitude>
+          <latitude>24.8946582712233</latitude>
+          <altitude>3000</altitude>
+          <range>300</range>
+          <tilt>0</tilt>
+          <heading>0</heading>
+        </LookAt>
+        <Point>
+          <coordinates>55.0713583175093,24.8946582712233,0</coordinates>
+        </Point>
+        <Style>
+          <BalloonStyle>
+            <text><![CDATA[<h2>Handset 9012</h2> <b>RadioID:</b> 9012<br/> <b>Speed:</b> 0.0 km/h;<br/> <b>Updated on:</b> 2012-06-05 12:59:29<br/><br/> ]]></text>
+          </BalloonStyle>
+        </Style>
+      </Placemark>
+      <Placemark xmlns="">
+        <name>Handset 9013</name>
+        <LookAt>
+          <longitude>55.0712600816041</longitude>
+          <latitude>24.8947416711599</latitude>
+          <altitude>3000</altitude>
+          <range>300</range>
+          <tilt>0</tilt>
+          <heading>0</heading>
+        </LookAt>
+        <Point>
+          <coordinates>55.0712600816041,24.8947416711599,0</coordinates>
+        </Point>
+        <Style>
+          <BalloonStyle>
+            <text><![CDATA[<h2>Handset 9013</h2> <b>RadioID:</b> 9013<br/> <b>Speed:</b> 0.0 km/h;<br/> <b>Updated on:</b> 2012-06-05 12:58:49<br/><br/> ]]></text>
+          </BalloonStyle>
+        </Style>
+      </Placemark>
+    </Folder>
+    <Folder name="Map Objects">
+      <name>Map Objects</name>
+    </Folder>
+    <Folder name="Map Regions">
+      <name>Map Regions</name>
+    </Folder>
+    <Folder name="Tracks">
+      <name>Tracks</name>
+    </Folder>
+  </Document>
+</kml>
