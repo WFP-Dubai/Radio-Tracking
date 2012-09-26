@@ -32,7 +32,7 @@ listOfServers = [
 
 def update(dataTable):
     outputData = []
-    p = re.compile('\d\d\d\d')
+    p = re.compile('\d+')
     for i in dataTable:
         
         timetable = i.getElementsByTagName('value')[0].childNodes[0].nodeValue
