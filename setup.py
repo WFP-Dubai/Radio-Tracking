@@ -8,7 +8,7 @@ Usage:
 from distutils.core import setup
 import py2exe
 
-APP = ['tracking_push_update_moto.py']
+APP = ['tracking_push_update.py']
 DATA_FILES = []
 OPTIONS = {'argv_emulation': False}
 

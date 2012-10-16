@@ -32,7 +32,8 @@ listOfServers = [
 
 def update(dataTable):
     outputData = []
-    p = re.compile('\d+')
+    p = re.compile('\((\d+)\)')
+    r = re.compile('#(\d+)')
     for i in dataTable:
         
         timetable = i.getElementsByTagName('value')[0].childNodes[0].nodeValue
@@ -41,7 +42,10 @@ def update(dataTable):
         coord = i.getElementsByTagName('coordinates')[0].childNodes[0].nodeValue
         devicePosition['Lon'] = coord.split(',')[0]
         devicePosition['Lat'] = coord.split(',')[1]
-        devicePosition['ID']=p.findall(  i.getElementsByTagName('name')[0].childNodes[0].nodeValue)[0]
+        try:
+            devicePosition['ID']=p.findall(  i.getElementsByTagName('name')[0].childNodes[0].nodeValue)[0]
+        except:
+            devicePosition['ID']=r.findall(  i.getElementsByTagName('name')[0].childNodes[0].nodeValue)[0]
         devicePosition['Timestamp']= datetime.datetime.fromtimestamp(float(timetable))
         pushUrl = "/trackme/requests.php?a=upload&id=%s%s&lat=%s&long=%s&do=%s&tn="%(foodsat_prefix,devicePosition['ID'],devicePosition['Lat'],devicePosition['Lon'],devicePosition['Timestamp'])
         #try:

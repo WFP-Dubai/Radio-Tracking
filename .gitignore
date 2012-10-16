@@ -3,3 +3,6 @@ build
 dist
 *.pyc
 *.zip
+*.pyd*
+*.exe
+*.dll
