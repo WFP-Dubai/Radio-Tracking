@@ -6,3 +6,4 @@ dist
 *.pyd*
 *.exe
 *.dll
+RadioTracker_Windows/tracking.ini
