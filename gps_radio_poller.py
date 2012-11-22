@@ -22,7 +22,7 @@ def ConfigSectionMap(section):
     return dict1
 
 Config = ConfigParser.ConfigParser()
-Config.read("tracking_settings.ini")
+Config.read("settings.ini")
 settings = ConfigSectionMap("Settings")
 
 trackMeServer = ConfigSectionMap("Settings")['trackme_server']
@@ -134,8 +134,10 @@ if system_type == 'trbonet' or system_type == 'smartptt':
 
 if system_type == 'wave':
     try:
+        
         fh = urllib2.urlopen('http://'+ server_url +'/all-subscribers.kml')
         html = fh.read()
+        #print html
         fh.close()
         soup = parseString(html)
         devicePosition = dict();

@@ -8,7 +8,7 @@ Usage:
 from distutils.core import setup
 import py2exe
 
-APP = ['tracking_push_update_moto.py']
+APP = ['gps_radio_poller.py']
 DATA_FILES = []
 OPTIONS = {'argv_emulation': False}
 
