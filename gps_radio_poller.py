@@ -110,6 +110,7 @@ def update_kml_file(dataTable):
 
 def send_data(devicePosition):
         pushUrl = "/trackme/requests.php?a=upload&id=%s%s&lat=%s&long=%s&do=%s&tn="%(foodsat_prefix,devicePosition['ID'],devicePosition['Lat'],devicePosition['Lon'],devicePosition['Timestamp'])
+        pushUrl_new = "/trackme/radio_update/%s/%s/%s/?date="%(foodsat_prefix,devicePosition['ID'],devicePosition['Lat'],devicePosition['Lon'],devicePosition['Timestamp'])
         import urllib
         #print pushUrl
         pushUrl = urllib.quote(pushUrl,'\&/?=')
