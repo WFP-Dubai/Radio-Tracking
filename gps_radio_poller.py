@@ -3,9 +3,14 @@
 import urllib2, re, datetime, ConfigParser,time
 from xml.dom.minidom import parse, parseString
 from xml.dom import Node
+import _mssql, decimal, uuid,pymssql
+
 
 def report_issues(issue):
     # make connection to trackme server to report any issues
+    poll_url = 'http://'+trackMeServer+ '/radio_error/' + settings['server_name'] +'?error_message='+issue
+    poll_response = urllib2.urlopen(poll_url)
+    poll_data = poll_response.read()
     print issue
 
 def ConfigSectionMap(section):
@@ -25,17 +30,18 @@ Config = ConfigParser.ConfigParser()
 Config.read("settings.ini")
 settings = ConfigSectionMap("Settings")
 
-trackMeServer = ConfigSectionMap("Settings")['trackme_server']
-foodsat_prefix = ConfigSectionMap("Settings")['foodsat_prefix']
+trackMeServer = settings['trackme_server']
+foodsat_prefix = settings['foodsat_prefix']
 system_type =  settings['system_type']
+server_name = settings['server_name']
 
 if system_type == 'wave':
-    wave_server_address = ConfigSectionMap("Settings")['radio_server_address']
-    wave_server_port = ConfigSectionMap("Settings")['radio_server_port']
+    wave_server_address = settings['radio_server_address']
+    wave_server_port = settings['radio_server_port']
     server_url =  wave_server_address +':'+wave_server_port
 
-if system_type == 'smartptt_db'or system_type == 'trbonet_db':
-    db_name=ConfigSectionMap("Settings")['wave_server']
+#if system_type == 'smartptt_db'or system_type == 'trbonet_db':
+#    db_name=settings['wave_server']
 
 if system_type == 'trbonet' or system_type == 'smartptt':
     kml_file =  settings['kml_file']
@@ -56,7 +62,7 @@ def update_trbonet(dataTable):
         devicePosition['Lon'] = coord.split(',')[0]
         devicePosition['Lat'] = coord.split(',')[1]
         
-        send_data(devicePosition)   
+        send_data(devicePosition)
 
 
 def update_smartptt_kml(dataTable):
@@ -76,8 +82,8 @@ def update_smartptt_kml(dataTable):
         devicePosition['Lon'] = coord.split(',')[0]
         devicePosition['Lat'] = coord.split(',')[1]
         send_data(devicePosition)   
-
         
+
 
 def update_wave(dataTable):
     p = re.compile('\((\d+)\)')
@@ -100,6 +106,34 @@ def update_wave(dataTable):
         except Exception as e:
             report_issues( e )
 
+
+def readDatabaseSPTT():
+    conn = pymssql.connect(server=settings['database_name'], user=settings['server_user'],password=settings['server_pw'],database=settings['server_database'], as_dict=True)
+    query = """
+    select * from (
+    SELECT radioid, dt, latitude, longitude, speed, radius, rssi, ROW_NUMBER() OVER (PARTITION BY radioid ORDER BY dt DESC) as rn
+    FROM (SELECT ((id & 0xFF) * 65536 + (id / 256 & 0xFF) * 256) + (id / 65536 & 0xFF) AS radioid, dt, latitude, longitude, speed, radius, rssi
+     FROM (SELECT CAST(CASE WHEN msuid < 0 THEN (4294967296 + msuid) ELSE msuid END / 256 AS int) AS id, dt, latitude, longitude, speed, radius, rssi
+    FROM RadioServer1.dbo.LocationData) AS xLocationData) AS yLocationData 
+    ) a where rn = 1 order by dt"""
+    
+    cur = conn.cursor()
+    cur.execute(query)
+    for radio in cur:
+        try:
+            
+            devicePosition = {}
+            devicePosition['Name']  = radio['radioid']
+            devicePosition['Lon']   = radio['longitude']
+            devicePosition['Lat']   = radio['latitude']
+            devicePosition['ID']    = radio['radioid']
+            devicePosition['Timestamp'] = radio['dt']
+            send_data(devicePosition)
+        except Exception as e:
+            report_issues( e )
+        
+
+
 def update_kml_file(dataTable):
 
     if system_type == 'trbonet':
@@ -110,50 +144,58 @@ def update_kml_file(dataTable):
 
 def send_data(devicePosition):
         pushUrl = "/trackme/requests.php?a=upload&id=%s%s&lat=%s&long=%s&do=%s&tn="%(foodsat_prefix,devicePosition['ID'],devicePosition['Lat'],devicePosition['Lon'],devicePosition['Timestamp'])
-        pushUrl_new = "/trackme/api/radio_update/%s/%s/%s/?date=%s&device_type=%s"%(foodsat_prefix,devicePosition['ID'],devicePosition['Lat'],devicePosition['Lon'],devicePosition['Timestamp'],"smartptt")
+        pushUrl_new = "/trackme/radio_update/%s/%s%s/%s/%s/?date=%s&device_type=%s"%(settings['server_name'],foodsat_prefix,devicePosition['ID'],devicePosition['Lat'],devicePosition['Lon'],devicePosition['Timestamp'],system_type)
         import urllib
-        #print pushUrl
         pushUrl = urllib.quote(pushUrl,'\&/?=')
+        pushUrl_new = urllib.quote(pushUrl_new,'\&/?=')
         try:
             urllib2.urlopen('http://'+trackMeServer+ pushUrl)
+        except Exception as e:
+            urllib2.urlopen('http://'+trackMeServer+ pushUrl_new)
+            report_issues( e )
+
+def polling():
+    try:
+        poll_url = 'http://'+trackMeServer+ '/trackme/radio_check/' + settings['server_name'] 
+        poll_response = urllib2.urlopen(poll_url)
+        poll_data = poll_response.read()
+        if poll_data == '1':
+            return True
+        else:
+            return False
+    except:
+            return True
+
+if polling():
+    if system_type == 'trbonet' or system_type == 'smartptt':
+        try:
+            fh = open(kml_file,'r')
+            data = fh.read()
+            soup = parseString(data)
+            fh.close()
+            devicePosition = dict()
+            dataTable = soup.getElementsByTagName('Placemark')
+            update_kml_file(dataTable)
         except Exception as e:
             report_issues( e )
 
 
-if system_type == 'trbonet' or system_type == 'smartptt':
-    try:
-        fh = open(kml_file,'r')
-        data = fh.read()
-        soup = parseString(data)
-        fh.close()
-        devicePosition = dict()
-        dataTable = soup.getElementsByTagName('Placemark')
-        update_kml_file(dataTable)
-    except Exception as e:
-        report_issues( e )
-
-
-if system_type == 'wave':
-    try:
+    if system_type == 'wave':
+        try:
         
-        fh = urllib2.urlopen('http://'+ server_url +'/all-subscribers.kml')
-        html = fh.read()
-        #print html
-        fh.close()
-        soup = parseString(html)
-        devicePosition = dict();
-        dataTable = soup.getElementsByTagName('Placemark')
-        update_wave(dataTable)
-    except Exception as e:
-        report_issues( e )
+            fh = urllib2.urlopen('http://'+ server_url +'/all-subscribers.kml')
+            html = fh.read()
+            #print html
+            fh.close()
+            soup = parseString(html)
+            devicePosition = dict();
+            dataTable = soup.getElementsByTagName('Placemark')
+            update_wave(dataTable)
+        except Exception as e:
+            report_issues( e )
         
-if system_type == 'smartptt_db':
-    print "not yet implemented"
-    #connect to db using python
+    if system_type == 'smartptt_db':
+        readDatabaseSPTT()
+        #connect to db using python
 
-if system_type == 'trbonet_db':
-    print "not yet implemented"
-
-
-urllib2.urlopen('http://'+trackMeServer+'/trackme/trackme/update/')
 print 0

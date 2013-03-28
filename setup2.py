@@ -8,11 +8,10 @@ Usage:
 from distutils.core import setup
 import py2exe
 
-APP = ['gps_radio_poller.py']
+APP = ['db_test.py']
 DATA_FILES = []
 OPTIONS = {'argv_emulation': False}
 
 setup(
-    console=APP,
-    data_files=[ (".",["settings.ini",])]
+    console=APP
 )
