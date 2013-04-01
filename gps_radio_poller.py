@@ -114,9 +114,10 @@ def readDatabaseSPTT():
     SELECT radioid, dt, latitude, longitude, speed, radius, rssi, ROW_NUMBER() OVER (PARTITION BY radioid ORDER BY dt DESC) as rn
     FROM (SELECT ((id & 0xFF) * 65536 + (id / 256 & 0xFF) * 256) + (id / 65536 & 0xFF) AS radioid, dt, latitude, longitude, speed, radius, rssi
      FROM (SELECT CAST(CASE WHEN msuid < 0 THEN (4294967296 + msuid) ELSE msuid END / 256 AS int) AS id, dt, latitude, longitude, speed, radius, rssi
-    FROM RadioServer1.dbo.LocationData) AS xLocationData) AS yLocationData 
+    FROM <DATABASE>.dbo.LocationData) AS xLocationData) AS yLocationData 
     ) a where rn = 1 order by dt"""
     
+    query = query.replace("<DATABASE>",settings['server_database'])
     cur = conn.cursor()
     cur.execute(query)
     for radio in cur:
