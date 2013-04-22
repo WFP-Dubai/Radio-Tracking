@@ -8,10 +8,11 @@ import _mssql, decimal, uuid,pymssql
 
 def report_issues(issue):
     # make connection to trackme server to report any issues
-    poll_url = 'http://'+trackMeServer+ '/radio_error/' + settings['server_name'] +'?error_message='+issue
+    issueString = issue.reason
+    poll_url = 'http://'+trackMeServer+ '/trackme/radio_error/' + settings['server_name'] +'?error_message='+issueString
     poll_response = urllib2.urlopen(poll_url)
     poll_data = poll_response.read()
-    print issue
+#    print issue
 
 def ConfigSectionMap(section):
     dict1 = {}
@@ -108,7 +109,8 @@ def update_wave(dataTable):
 
 
 def readDatabaseSPTT():
-    conn = pymssql.connect(server=settings['database_name'], user=settings['server_user'],password=settings['server_pw'],database=settings['server_database'], as_dict=True)
+    db_server = "%s:%s"%(settings['radio_server_address'],settings['radio_server_port'])
+    conn = pymssql.connect(server=db_server, user=settings['server_user'],password=settings['server_pw'],database=settings['server_database'], as_dict=True)
     query = """
     select * from (
     SELECT radioid, dt, latitude, longitude, speed, radius, rssi, ROW_NUMBER() OVER (PARTITION BY radioid ORDER BY dt DESC) as rn
@@ -144,15 +146,13 @@ def update_kml_file(dataTable):
                 
 
 def send_data(devicePosition):
-        pushUrl = "/trackme/requests.php?a=upload&id=%s%s&lat=%s&long=%s&do=%s&tn="%(foodsat_prefix,devicePosition['ID'],devicePosition['Lat'],devicePosition['Lon'],devicePosition['Timestamp'])
+        #  pushUrl = "/trackme/requests.php?a=upload&id=%s%s&lat=%s&long=%s&do=%s&tn="%(foodsat_prefix,devicePosition['ID'],devicePosition['Lat'],devicePosition['Lon'],devicePosition['Timestamp'])
         pushUrl_new = "/trackme/radio_update/%s/%s%s/%s/%s/?date=%s&device_type=%s"%(settings['server_name'],foodsat_prefix,devicePosition['ID'],devicePosition['Lat'],devicePosition['Lon'],devicePosition['Timestamp'],system_type)
-        import urllib
-        pushUrl = urllib.quote(pushUrl,'\&/?=')
-        pushUrl_new = urllib.quote(pushUrl_new,'\&/?=')
+        #pushUrl = urllib2.quote(pushUrl,'\&/?=')
+        pushUrl_new = urllib2.quote(pushUrl_new,'\&/?=')
         try:
-            urllib2.urlopen('http://'+trackMeServer+ pushUrl)
-        except Exception as e:
             urllib2.urlopen('http://'+trackMeServer+ pushUrl_new)
+        except Exception as e:
             report_issues( e )
 
 def polling():
