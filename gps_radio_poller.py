@@ -1,22 +1,31 @@
 #!/usr/bin/env python
-import urllib2, re, datetime, ConfigParser,time
+import ConfigParser
 from gps_tools import *
+
 
 
 Config = ConfigParser.ConfigParser()
 Config.read("settings.ini")
-settings = ConfigSectionMap("Settings",Config)
+settings = config_section_map("Settings",Config)
 
 system_type =  settings['system_type']
 
-if polling():
-    if system_type == 'trbonet' or system_type == 'smartptt':
-        getKML()
+def main():
+    status = 0
+    try:
+        if polling():
+            if system_type == 'trbonet' or system_type == 'smartptt':
+                get_kml()
 
-    if system_type == 'wave':
-        getWave()
+            if system_type == 'wave':
+                get_wave()
         
-    if system_type == 'smartptt_db':
-        readDatabaseSPTT()
-        
-print 0
+            if system_type == 'smartptt_db':
+                 get_database_sptt()
+    except:
+        status = -1       
+    print status
+
+
+if __name__ == '__main__':
+    main()

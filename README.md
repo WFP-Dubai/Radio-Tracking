@@ -8,3 +8,9 @@ To Configure:
 
 edit settings.ini
 
+To compile:
+
+run:
+        python setup.py py2exe
+        
+zip dist folder 
