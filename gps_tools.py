@@ -179,9 +179,10 @@ def get_database_sptt():
          ELSE msuid END / 256 AS int) AS
           id, dt, latitude, longitude, speed, radius, rssi
         FROM <DATABASE>.dbo.LocationData) AS xLocationData) AS yLocationData 
-        ) a where rn = 1 order by dt"""
+        ) a where rn = 1 AND (GETUTCDATE() - dt < <PERIOD>) order by dt"""
     
         query = query.replace("<DATABASE>",settings['server_database'])
+        query = query.replace("<PERIOD>",settings['period'])
         cur = conn.cursor()
         cur.execute(query)
         for radio in cur:
